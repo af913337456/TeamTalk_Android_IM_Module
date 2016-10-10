@@ -1,0 +1,48 @@
+
+IMAndroid
+
+1)、登陆->建立连接的流程:
+
+Begin
+
+1->点击登录按钮-----需要自己实现
+
+2->IMLoginManager:login(String userName, String password)
+
+3->验证服务器地址信息,IMSocketManager:reqMsgServerAddrs()
+
+4->IMSocketManager:connectMsgServer(MsgServerAddrsEntity currentMsgAddress)
+
+5->现在就是进入到了,Netty 的 socket 连接阶段
+
+6->连接成功后,MsgServerHandler:channelConnected(...)
+
+7->开始真正登录,IMSocketManager.instance().onMsgServerConnected()
+
+8->IMLoginManager:onRepMsgServerLogin(IMLogin.IMLoginRes loginRes)
+
+9->IMLoginManager:onLoginOk()
+
+10->事件驱动,triggerEvent(LoginEvent.LOGIN_OK)
+
+11->LoginActivity:onEventMainThread(LoginEvent event)-------需要自己实现
+
+12->LoginActivity:onLoginSuccess()-------需要自己实现
+
+13->跳转到,MainActivity
+
+->End
+
+启动心跳、请求所有联系人、加载所有会话、
+加载所有未读信息、监听网络、初始化发信息的配置、
+初始化推送的配置：
+
+在 1) 的10,事件同时分发给了，IMServer:onNormalLoginOk(),下面依次启动上述对应
+-> IMServer:contactMgr.onNormalLoginOk();
+-> IMServer:sessionMgr.onNormalLoginOk();
+-> IMServer:groupMgr.onNormalLoginOk();
+-> IMServer:unReadMsgMgr.onNormalLoginOk();
+-> IMServer:reconnectMgr.onNormalLoginOk();
+-> IMServer:messageMgr.onLoginSuccess();
+-> IMServer:notificationMgr.onLoginSuccess();
+-> IMServer:heartBeatManager.onloginNetSuccess();
